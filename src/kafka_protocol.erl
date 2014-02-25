@@ -481,6 +481,12 @@ parse_messages(<<L:32/integer, _/binary>> = B, Acc, Size) when size(B) >= L + 4-
 parse_messages(_B, Acc, Size) ->
     {lists:reverse(Acc), Size}.
 
+parse_multi_messages(<<2:32/integer, _:16, Rest/binary>>) ->
+    %% Ignore meta (2 bytes Magic and Comp)
+    %% Ignore errors
+    %% If Magic = 0 and Comp = 1:
+    %% kafka.common.OffsetOutOfRangeException: offset N is out of range
+    [{[], 0}|parse_multi_messages(Rest)];
 parse_multi_messages(<<L:32/integer, 0:16, Rest/binary>>) ->
     Size = L - 2,
     <<Messages:Size/binary, Rest2/binary>> = Rest,
