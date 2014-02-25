@@ -34,7 +34,7 @@ fetch (Broker, Topic, Partition, Offset) ->
 
 multi_fetch(Broker, TopicPartitionOffsets) -> 
    Req = kafka_protocol:multi_fetch_request (TopicPartitionOffsets), 
-   call({Broker, request_with_response, Req}).
+   call({Broker, multi_request_with_response, Req}).
 
 offset(Broker, Topic, Partition, Time, MaxNumberOfOffsets) ->
    Req = kafka_protocol:offset_request(Topic, Partition, Time, MaxNumberOfOffsets), 
@@ -87,6 +87,15 @@ call({Broker, request_with_response, Req}) ->
 
         {BrokerInstancePid,_BrokerInstanceId}  -> 
               gen_server:call(BrokerInstancePid, {request_with_response, Req})
+   end;
+
+call({Broker, multi_request_with_response, Req}) -> 
+   case kafka_server_sup:get_random_broker_instance_from_pool(Broker) of 
+       {error, _} -> 
+           {error, unable_to_get_broker_instance_from_pool};
+
+        {BrokerInstancePid,_BrokerInstanceId}  -> 
+              gen_server:call(BrokerInstancePid, {multi_request_with_response, Req})
    end.
 
 

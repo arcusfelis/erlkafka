@@ -15,6 +15,7 @@
 -export([fetch_request/3, fetch_request/4]).
 -export([multi_fetch_request/1]).
 -export( [parse_messages/1]).
+-export( [parse_multi_messages/1]).
 
 -export([ produce_request/2, produce_request/3, produce_request/5]).
 -export([multi_produce_request/1]).
@@ -481,6 +482,13 @@ parse_messages(<<L:32/integer, _/binary>> = B, Acc, Size) when size(B) >= L + 4-
 parse_messages(_B, Acc, Size) ->
     {lists:reverse(Acc), Size}.
 
+parse_multi_messages(<<L:32/integer, 0:16, Rest/binary>>) ->
+    Size = L - 2,
+    <<Messages:Size/binary, Rest2/binary>> = Rest,
+    ParsedMessages = parse_messages(Messages),
+    [ParsedMessages|parse_multi_messages(Rest2)];
+parse_multi_messages(<<>>) ->
+    [].
 
 
 %%%-------------------------------------------------------------------

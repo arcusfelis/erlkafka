@@ -56,6 +56,23 @@ handle_call({request_with_response, Req}, _From, State) ->
             {reply, {error, B}, State}
     end;
 
+handle_call({multi_request_with_response, Req}, _From, State) -> 
+
+  ok = gen_tcp:send(State#state.socket, Req),
+
+
+  case gen_tcp:recv(State#state.socket, 6) of
+        {ok, <<2:32/integer, 0:16/integer>>} ->
+            {reply, {ok, []}, State};
+        {ok, <<L:32/integer, 0:16/integer>>} ->
+            {ok, Data} = gen_tcp:recv(State#state.socket, L-2),
+            MessagesSize = kafka_protocol:parse_multi_messages(Data),
+            {reply, {ok, MessagesSize}, State};
+
+        {ok, B} ->
+            {reply, {error, B}, State}
+    end;
+
 handle_call({request_with_response_offset, Req}, _From, State) -> 
 
   ok = gen_tcp:send(State#state.socket, Req),
