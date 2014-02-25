@@ -53,7 +53,7 @@ start_link(Params) ->
 			  ?MODULE, [Params]).
 
 
-get_random_broker_instance_from_pool(Broker) -> 
+get_random_broker_instance_from_pool(Broker) when is_integer(Broker) -> 
     BrokerPoolCount = param("BrokerPoolCount", ?DEFAULT_POOL_COUNT),	
     Pids = get_ids(),
     BrokerInstance = Broker*BrokerPoolCount + random:uniform(BrokerPoolCount),
@@ -65,8 +65,9 @@ get_random_broker_instance_from_pool(Broker) ->
 	            		  false-> false  
 		             end 
 		     end,
-		     Pids)).
-
+		     Pids));
+get_random_broker_instance_from_pool(Broker) when is_pid(Broker) -> 
+    {Broker, 0}.
 
 
 
