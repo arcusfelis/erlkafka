@@ -175,7 +175,6 @@ produce_request(Topic, Partition,  Messages) ->
 produce_request(Topic, Partition, Magic, Compression, Messages) -> 
 
    MessagesLength = size_of_produce_messages(Messages),
-   io:format("Messages_Length = ~w~n", [MessagesLength]),
    TopicSize = size(Topic),
    RequestSize = 2 + 2 + TopicSize + 4 + 4 + MessagesLength, 
 
